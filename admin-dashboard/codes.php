@@ -1,0 +1,298 @@
+<?php
+// initialize session
+session_start();
+include('../config.php'); // database connection
+
+header('Content-Type: application/json');
+if (isset($_REQUEST['user_basic_account_info_btn'])) {
+  // User  form input values
+  $first_name        =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['first_name'])));
+  $last_name        =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['last_name'])));
+  $phone        =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['phone'])));
+  $BDate        =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['BDate'])));
+  $Gender       =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Gender'])));
+  $AddressType  =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['AddressType'])));
+  $Parish       =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Parish'])));
+  $AddressLine1 =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['AddressLine1'])));
+  $AddressLine2 =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['AddressLine2'])));
+  $Region       =   '';
+  $oldImage     =   $_REQUEST['old_image'];
+  $File         =   '';
+  if ($_REQUEST['Region'] != '') {
+    $Region =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Region'])));
+  } else if ($_REQUEST['Region2'] != '') {
+    $Region = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Region2'])));
+  } else if ($_REQUEST['Region3'] != '') {
+    $Region = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Region3'])));
+  };
+  if ($first_name == '') {
+    $_SESSION['message-1'] =  'Please Enter First Name';
+    $_SESSION['message']   =  'Please Enter First Name';
+    header('location: user-dashboard/user-account.php?no-update-basic-data=');
+    die();
+  };
+  if ($last_name == '') {
+
+    $_SESSION['message-2'] =  'Please Enter Last Name';
+    $_SESSION['message']   =  'Please Enter Last Name';
+    header('location: user-dashboard/user-account.php?no-update-basic-data=');
+    die();
+  };
+  if ($phone == '') {
+    $_SESSION['message-3'] =  'Please Enter Phone number';
+    $_SESSION['message']   =  'Please Enter Phone number';
+    header('location: user-dashboard/user-account.php?no-update-basic-data=');
+    die();
+  };
+  if ($BDate == '') {
+    $_SESSION['message-4'] =  'Please Enter Date of Birth';
+    $_SESSION['message']   =  'Please Enter Date of Birth';
+    header('location: user-dashboard/user-account.php?no-update-basic-data=');
+    die();
+  };
+  if (!isset($_REQUEST['Gender'])) {
+    $_SESSION['message-10'] =  'Please Enter Gender';
+    $_SESSION['message']   =  'Please Enter Gender';
+    header('location: user-dashboard/user-account.php?no-update-basic-data=');
+    die();
+  };
+  if ($_FILES['file']['name'] == '') {
+
+    if (user_account_information()['file'] == '') {
+
+      $_SESSION['message-5'] =  'Please Enter your Copy of Photo Identification';
+      $_SESSION['message']   =  'Please Enter your Copy of Photo Identification';
+      header('location: user-dashboard/user-account.php?no-update-basic-data=');
+      die();
+    } else {
+
+      $File  = $oldImage;
+    }
+  } else {
+    $fileExtension =   pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);  // getting file extension
+    if (
+      $fileExtension != 'pdf' && $fileExtension != 'doc'
+      && $fileExtension != 'docx' && $fileExtension != 'jpg' &&
+      $fileExtension != 'jpeg' && $fileExtension != 'png'
+    ) {
+      $_SESSION['message-5'] =  'The file is not allowed';
+      $_SESSION['message']   =  'The file is not allowed';
+      header('location: user-dashboard/user-account.php?no-update-basic-data=');
+      die();
+    }
+    if ($_FILES['file']['size'] / 1024 / 1024 >= 10) // MAX size 10MB allowed
+    {
+      $_SESSION['message-5'] =  'The file is too large';
+      $_SESSION['message']   =  'The file is too large';
+      header('location: user-dashboard/user-account.php?no-update-basic-data=');
+      die();
+    };
+    $File  = $_FILES['file']['name'];
+  };
+  if ($AddressType == '') {
+    $_SESSION['message-6'] =  'Please Enter Address Type';
+    $_SESSION['message']   =  'Please Enter Address Type';
+    header('location: user-dashboard/user-account.php?no-update-basic-data=');
+    die();
+  }
+  if ($Parish == '') {
+    $_SESSION['message-7'] =  'Please Enter Parish';
+    $_SESSION['message']   =  'Please Enter Parish';
+    header('location: user-dashboard/user-account.php?no-update-basic-data=');
+    die();
+  };
+  if ($Region == '') {
+    $_SESSION['message-8'] =  'Please Enter Region';
+    $_SESSION['message']   =  'Please Enter Region';
+    header("location: user-dashboard/user-account.php?no-update-basic-data=$Region");
+    die();
+  };
+  if ($AddressLine1 == '') {
+    $_SESSION['message-9'] =  'Please Enter Address Line 1';
+    $_SESSION['message']   =  'Please enter Address Line 1';
+    header('location: user-dashboard/user-account.php?no-update-basic-data=');
+    die();
+  };
+
+  // Updating user basic information
+  $sql = "UPDATE users SET first_name = '$first_name', last_name = '$last_name', PhoneNumber = '$phone', DateOfBirth = '$BDate', Gender = '$Gender', 
+	            file = '$File', AddressType = '$AddressType', Parish = '$Parish', Region = '$Region', 
+				AddressLine1 = '$AddressLine1', AddressLine2 = '$AddressLine2' WHERE id = $user_id";
+  if (mysqli_query($conn, $sql)) {
+
+    if ($_FILES['file']['name'] != '') {
+
+      unlink("uploaded-file/$oldImage");
+      $fileTmp   =   $_FILES['file']['tmp_name'];
+      $File_name =   $_FILES['file']['name'];
+
+      if (move_uploaded_file($fileTmp, "uploaded-file/$File_name")) {
+
+        $_SESSION['message']   =  'Account information has been updated';
+        header('location: user-dashboard/user-account.php');
+        die();
+      } else {
+
+        $_SESSION['message']  = "Something went wrong, Please try later";
+        header('location: user-dashboard/user-account.php');
+        die();
+      };
+    };
+
+    $_SESSION['message']   =  'Account information has been updated';
+    header('location: user-dashboard/user-account.php');
+    die();
+  } else {
+
+    $_SESSION['message']   =  'Something went wrong, Please try later.1';
+    header('location: user-dashboard/user-account.php');
+    die();
+  };
+};
+//==================================================User basic account info updating end===============================
+
+
+//================================================== Credit adding in user account start===============================
+
+if (isset($_REQUEST['new_credit_btn'])) {
+
+  $new_credit    =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['new_credit'])));
+  $user_id       =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['user_id'])));
+  $user_name     =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['user_name'])));
+  $account_number =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['account_number'])));
+
+  $sql = "SELECT total_balance FROM balance WHERE user_id = $user_id";
+  $result = mysqli_query($conn, $sql);
+  if (mysqli_num_rows($result) > 0) {
+    $rows = mysqli_fetch_array($result);
+    $total_balance =  $rows['total_balance'] + $new_credit;
+
+    $sql =  "UPDATE balance SET total_balance = $total_balance, add_new_credit = $new_credit WHERE user_id = $user_id";
+
+    if (mysqli_query($conn, $sql)) {
+      $sql = "INSERT INTO balance (user_id, add_new_credit, created_at) VALUES ($user_id, $new_credit, NOW())";
+      if (mysqli_query($conn, $sql)) {
+
+        $_SESSION['message']   =  'Credit updated successfully';
+        header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
+        die();
+      } else {
+
+        $_SESSION['message']   =  'Something went wrong';
+        header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
+        die();
+      }
+    } else {
+
+      $_SESSION['message']   =  'Something went wrong';
+      header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
+      die();
+    }
+  } else {
+
+    // If no balance record exists, insert new one
+    $sql = "INSERT INTO balance (user_id, total_balance, add_new_credit, created_at) VALUES ($user_id, $new_credit, $new_credit, NOW())";
+    if (mysqli_query($conn, $sql)) {
+
+      $_SESSION['message']   =  'Credit updated successfully';
+      header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
+      die();
+    } else {
+
+      $_SESSION['message']   =  'Something went wrong';
+      header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
+      die();
+    }
+  };
+};
+//================================================== Credit adding in user account end=============================== 
+
+//================================================== Pre-alert showing for Pre-alert page start ===============================  
+
+ if (isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) && $_REQUEST['showing_PreAlert_for_PreAlert_page'] == "1") {
+  // Clean any previous output
+  if (ob_get_level()) {
+    ob_clean();
+  }
+  ob_start();
+
+  header('Content-Type: application/json');
+  error_log("Starting pre-alert request for id: " . ($_REQUEST['Pre_alert_id'] ?? 'not set'));
+
+		     if (!isset($_REQUEST['Pre_alert_id']) || !is_numeric($_REQUEST['Pre_alert_id'])) {
+		         error_log("Invalid Pre_alert_id: " . $_REQUEST['Pre_alert_id']);
+		         ob_end_clean();
+		         echo json_encode(['error' => 'Invalid Pre_alert_id']);
+		         exit;
+		     }
+		     $Pre_alert_id = intval($_REQUEST['Pre_alert_id']);
+		     if ($Pre_alert_id <= 0) {
+		         error_log("Pre_alert_id <= 0: " . $Pre_alert_id);
+		         ob_end_clean();
+		         echo json_encode(['error' => 'Invalid Pre_alert_id']);
+		         exit;
+		     }
+		     error_log("Querying pre_alert for id: " . $Pre_alert_id);
+  $sql     = "SELECT * FROM pre_alert WHERE id = $Pre_alert_id";
+  $result  = mysqli_query($conn, $sql);
+  if (!$result) {
+    error_log("Database query failed: " . mysqli_error($conn));
+    ob_end_clean();
+    echo json_encode(['error' => 'Database error']);
+    exit;
+  }
+  $num_rows = mysqli_num_rows($result);
+  error_log("Query returned " . $num_rows . " rows");
+  if ($num_rows > 0) {
+    $rows = mysqli_fetch_assoc($result);
+    error_log("Raw rows: " . var_export($rows, true));
+
+    // Sanitize data to ensure valid UTF-8 and handle binary data
+    $sanitized = [];
+    foreach ($rows as $key => $value) {
+      if (is_string($value)) {
+        // Handle specific problematic fields
+        if ($key === 'weight' && strpos($value, '\x97') !== false) {
+          $sanitized[$key] = 'N/A'; // Replace binary weight with N/A
+        } elseif (preg_match('/[\x00-\x1F\x7F-\x9F]/', $value)) {
+          $sanitized[$key] = 'N/A'; // Replace any binary data with N/A
+        } else {
+          $sanitized[$key] = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+        }
+      } else {
+        $sanitized[$key] = $value;
+      }
+    }
+    error_log("Sanitized rows: " . var_export($sanitized, true));
+
+    $json = json_encode($sanitized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($json === false) {
+        error_log("json_encode failed: " . json_last_error_msg());
+        ob_end_clean();
+        echo json_encode(['error' => 'JSON encoding failed']);
+        exit;
+    }
+    error_log("JSON encoded length: " . strlen($json));
+    error_log("Final JSON: " . $json);
+    ob_end_clean();
+    echo $json;
+  } else {
+    error_log("Pre-alert not found for id: " . $Pre_alert_id);
+    ob_end_clean();
+    echo json_encode(['error' => 'Pre-alert not found']);
+  }
+  exit; // Ensure no additional output
+}
+
+//================================================== Pre-alert showing for Pre-alert page end  ===============================
+
+//================================================== Cache clear endpoint start ===============================
+if (isset($_REQUEST['clear_cache'])) {
+  include('CacheManager.php');
+  $cache = new CacheManager();
+  $cache->clear();
+  $_SESSION['message'] = 'Cache cleared successfully';
+  header('location: index.php');
+  die();
+}
+//================================================== Cache clear endpoint end ===============================
