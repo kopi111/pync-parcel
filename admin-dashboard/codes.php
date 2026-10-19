@@ -1,7 +1,20 @@
 <?php
 // initialize session
-session_start();
 include('../config.php'); // database connection
+include('../function.php'); // helpers (require_admin, require_csrf, e, ...)
+
+$base_url = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http')
+    . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/';
+require_admin($base_url);
+
+// Read-only AJAX lookups (e.g. showing_PreAlert_for_PreAlert_page) are exempt;
+// every mutating request below requires a valid CSRF token.
+$is_mutation = isset($_REQUEST['user_basic_account_info_btn'])
+    || isset($_REQUEST['new_credit_btn'])
+    || isset($_REQUEST['clear_cache']);
+if ($is_mutation) {
+    require_csrf();
+}
 
 header('Content-Type: application/json');
 if (isset($_REQUEST['user_basic_account_info_btn'])) {

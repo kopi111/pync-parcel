@@ -3,13 +3,8 @@
 include('config.php');
 include('helpers.php');
 
-//user account id in  COOKIE
- if(isset($_COOKIE['user_id'])) {
-
-      $user =  json_decode( $_COOKIE['user_id']);
-      $user_id = is_object($user) ? $user->id : $user;
-
-}
+// Identity comes from the server session only (see helpers.php::current_user_id).
+$user_id = current_user_id();
 
 
 // Check if function already exists to avoid redeclaration error
@@ -20,28 +15,37 @@ if (!function_exists('user_account_information')) {
     global $conn;
     global $user_id;
 
-    $sql = "SELECT * FROM users WHERE id = $user_id";
-    $result = mysqli_query($conn,  $sql);
+    $emptyAccount = array (
+        'first_name' => '',
+        'last_name' => '',
+        'phone_number' => '',
+        'email_address' => '',
+        'date_of_birth' => '',
+        'account_number' => '',
+        'gender' => '',
+        'role_as' => '',
+        'file' => '',
+        'address_type' => '',
+        'parish' => '',
+        'region' => '',
+        'address_line1' => '',
+        'address_line2' => '',
+        'password_hash' => ''
+    );
+
+    if ($user_id === null) {
+        return $emptyAccount;
+    }
+
+    $statement = mysqli_prepare($conn, 'SELECT * FROM users WHERE id = ?');
+    mysqli_stmt_bind_param($statement, 'i', $user_id);
+    mysqli_stmt_execute($statement);
+    $result = mysqli_stmt_get_result($statement);
 	$rows  =  mysqli_fetch_assoc($result);
+	mysqli_stmt_close($statement);
 
 	if (!$rows) {
-	    return array (
-	        'first_name' => '',
-	        'last_name' => '',
-	        'phone_number' => '',
-	        'email_address' => '',
-	        'date_of_birth' => '',
-	        'account_number' => '',
-	        'gender' => '',
-	        'role_as' => '',
-	        'file' => '',
-	        'address_type' => '',
-	        'parish' => '',
-	        'region' => '',
-	        'address_line1' => '',
-	        'address_line2' => '',
-	        'password_hash' => ''
-	    );
+	    return $emptyAccount;
 	}
 
 	return array (
@@ -75,9 +79,16 @@ if (!function_exists('Authorized_User')) {
          global $conn;
          global $user_id;
 
-        $sql = "SELECT * FROM authorized_users WHERE user_id = $user_id";
-        $result = mysqli_query($conn,  $sql);
+        if ($user_id === null) {
+            return ['first_name' => '', 'last_name' => '', 'IdType' => '', 'IdNumber' => ''];
+        }
+
+        $statement = mysqli_prepare($conn, 'SELECT * FROM authorized_users WHERE user_id = ?');
+        mysqli_stmt_bind_param($statement, 'i', $user_id);
+        mysqli_stmt_execute($statement);
+        $result = mysqli_stmt_get_result($statement);
     	$rows  =  mysqli_fetch_assoc($result);
+    	mysqli_stmt_close($statement);
     	if (!$rows) {
     	    return [
     	        'first_name' => '',
@@ -102,7 +113,7 @@ if (!function_exists('timeAgo')) {
     function timeAgo($datetime, $full = false) {
 
     	    //$tz = new DateTimeZone('America/New_York');
-    		date_default_timezone_set('Asia/Dhaka'); // or your timezone
+    		date_default_timezone_set('America/Jamaica');
             $now = new DateTime();
             $ago = new DateTime($datetime);
             $diff = $now->diff($ago);
@@ -147,32 +158,33 @@ if (!function_exists('calculate_value_of_package')) {
             return 0.00; // or handle error
         }
         $rates_data = json_decode(file_get_contents($rates_file), true);
-        $rates = $rates_data['rates'];
-        $additional_rate = $rates_data['additional_rate_above_20'];
-        $minimum_weight = $rates_data['minimum_weight'];
+        $additional_rate = (float) $rates_data['additional_rate_above_20'];
+        $minimum_weight = (float) $rates_data['minimum_weight'];
 
-        // Ensure minimum weight
-        if ($weight < $minimum_weight) {
-            $weight = $minimum_weight;
+        $price_by_weight = [];
+        $max_weight = 0;
+        foreach ($rates_data['rates'] as $rate) {
+            $price_by_weight[(string) $rate['weight']] = (float) $rate['price'];
+            $max_weight = max($max_weight, (float) $rate['weight']);
         }
 
-        // Find exact match for weight <= 20
-        foreach ($rates as $rate) {
-            if ($rate['weight'] == $weight) {
-                return $rate['price'];
-            }
+        $weight = (float) $weight;
+        if ($weight <= 0) {
+            return 0.00;
         }
 
-        // If weight > 20, calculate
-        if ($weight > 20) {
-            $base_price = 71.50; // price for 20 lbs
-            $extra_weight = $weight - 20;
-            return $base_price + ($extra_weight * $additional_rate);
+        // Mirrors the client-side computePrice() in js/custom.js so quotes match.
+        if ($weight <= $minimum_weight) {
+            return $price_by_weight[(string) $minimum_weight] ?? 0.00;
+        }
+        if ($weight <= $max_weight) {
+            $tier = ($weight <= 1) ? 1 : (int) ceil($weight);
+            return $price_by_weight[(string) $tier] ?? 0.00;
         }
 
-        // If no exact match and <=20, perhaps interpolate or return 0, but since rates are discrete, maybe return for closest lower
-        // For simplicity, return 0 if not exact, but probably weights are exact in the table.
-        return 0.00;
+        $base_price = $price_by_weight[(string) $max_weight] ?? 0.00;
+        $extra_units = (int) ceil($weight - $max_weight);
+        return $base_price + ($extra_units * $additional_rate);
     }
 }
 ?>

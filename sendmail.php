@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 // Diagnostics: log to a dedicated file to help troubleshoot "white screen" issues on production
 ini_set('display_errors', 0);
@@ -44,6 +43,7 @@ if (class_exists('Dotenv\\Dotenv')) {
 }
 
 include 'config.php';
+require_once __DIR__ . '/function.php';
 
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -79,13 +79,23 @@ try {
 }
 //Server settings
 //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-$mail->isSMTP();                                                                                                       //Send using SMTP
-$mail->Host       = MAIL_HOST;                                                                                //Set the SMTP server to send through
-$mail->SMTPAuth   = true;                                                                                              //Enable SMTP authentication
-$mail->Username   = MAIL_USERNAME;                                                                            //SMTP username
-$mail->Password   = MAIL_PASSWORD;                                                                            //SMTP password
-$mail->SMTPSecure = MAIL_ENCRYPTION === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS; //Enable implicit TLS encryption
-$mail->Port       = MAIL_PORT;                                                                                //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+$mail->isSMTP();                                              //Send using SMTP
+$mail->Host       = MAIL_HOST;                               //Set the SMTP server to send through
+$mail->Username   = MAIL_USERNAME;                           //SMTP username
+$mail->Password   = MAIL_PASSWORD;                           //SMTP password
+// Authenticate only when credentials are configured (a plain local relay has none).
+$mail->SMTPAuth   = MAIL_USERNAME !== '' && MAIL_PASSWORD !== '';
+// Honour the configured encryption; an empty value means a plain connection
+// (e.g. a local SMTP catcher) and STARTTLS must not be auto-negotiated.
+if (MAIL_ENCRYPTION === 'tls') {
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+} elseif (MAIL_ENCRYPTION === 'ssl') {
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+} else {
+    $mail->SMTPSecure  = false;
+    $mail->SMTPAutoTLS = false;
+}
+$mail->Port       = MAIL_PORT;                               //TCP port to connect to
 
 if (isset($_REQUEST['PasswordResetEmail'])) // for password reset
 {
@@ -118,7 +128,7 @@ if (isset($_REQUEST['PasswordResetEmail'])) // for password reset
 							   ";
 
     $mail->send();
-    $_SESSION['message'] = "<span style='color:#000'>An email has been sent to $email. you'll receive instructions on how to set a new password. Please check your email. </span>";
+    $_SESSION['message'] = "<span style='color:#000'>An email has been sent to " . e($email) . ". you'll receive instructions on how to set a new password. Please check your email. </span>";
 
     if (isset($_REQUEST['AnotherRequest'])) {
 

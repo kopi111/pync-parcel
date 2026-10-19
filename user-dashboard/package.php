@@ -1,6 +1,5 @@
 <?php
 // initialize session
-session_start();
 include '../config.php';                             // database connection
 include '../function.php';                           // function
 include '../user-area/authorized-user.php';          // function
@@ -238,7 +237,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
               </li>
               <li class="nav-item">
                 <span class="op-7">Welcome</span>
-                <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
+                <span class="fw-bold"><?php echo e(user_account_information()['first_name']); ?></span>
               </li>
             </ul>
           </div>
@@ -466,17 +465,17 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                             ?>
 
                             <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
-                              <a class="page-link" href="<?php echo ($page > 1) ? $base_url . "&page=" . ($page - 1) : '#'; ?>">&laquo;</a>
+                              <a class="page-link" href="<?php echo ($page > 1) ? e($base_url . "&page=" . ($page - 1)) : '#'; ?>">&laquo;</a>
                             </li>
 
                             <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                               <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                <a class="page-link" href="<?php echo e($base_url); ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
                               </li>
                             <?php endfor; ?>
 
                             <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
-                              <a class="page-link" href="<?php echo ($page < $total_pages) ? $base_url . "&page=" . ($page + 1) : '#'; ?>">&raquo;</a>
+                              <a class="page-link" href="<?php echo ($page < $total_pages) ? e($base_url . "&page=" . ($page + 1)) : '#'; ?>">&raquo;</a>
                             </li>
                           </ul>
                         </div>

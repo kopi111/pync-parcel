@@ -1,6 +1,5 @@
 <?php
     // initialize session
-    session_start();
 	include('../config.php'); // database connection
 
 require_once __DIR__ . '/../routes/web.php';
@@ -43,15 +42,11 @@ $base_url = $routes['base_url'];
 	          
                if(  mysqli_num_rows( $result ) == 1){ 
 			   
-			      // user account data storing in cookie
 				   $rows  =  mysqli_fetch_assoc($result);
 
-			    $user = array 
-						( 
-						  'id'=>$rows['id']
-						);
-						$user = json_encode($user); // user account data array to json
-                        setcookie('user_id', $user, time() + (86400 * 150), "/"); // 86400 = 1 day 
+				   // Log the user in using the server session.
+				   session_regenerate_id(true);
+				   $_SESSION['user_id'] = (int) $rows['id'];
 				
 			     $sql =  "UPDATE  users SET Token_hash = '', token_expired_at = null where Token_hash = '$token_hash'"; 
 				 $result = mysqli_query($conn,   $sql  );

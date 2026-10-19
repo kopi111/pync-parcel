@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/helpers.php'; if (session_status() === PHP_SESSION_NONE) { session_start(); } ?>
 <?php
 // Help page with image using the same layout as about-us.php
 ?>
@@ -56,9 +57,8 @@
                         <li class="nav-item"> 			
 						 
 						  	<?php  
-								 if( isset($_COOKIE['user_id']) ){ 
+								 if( is_logged_in() ){ 
 								 
-								    $user_Data = json_decode( $_COOKIE['user_id']) ; 
 					              
 									echo  "
 									       <a class='nav-link me-lg-3' href='user-dashboard/index.php'> 
@@ -79,7 +79,7 @@
 				            ?>
 						</li>
 						 <?php 
-						  if( isset($_COOKIE['user_id']) ){?> 
+						  if( is_logged_in() ){?> 
 						 <li class="nav-item sign_out_icon"> 
 							  <a class="nav-link me-lg-3" href="user-area/log-out.php"> 
 							   <i class="bi bi-box-arrow-right "></i>

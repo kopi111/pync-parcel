@@ -191,6 +191,18 @@ function batch_update_customers($customers, $batch_size = 10)
  */
 function make_api_request($url, $method = 'POST', $payload = null, $headers = [], $expected_keys = [])
 {
+    // Warehouse sync is best-effort: skip cleanly when the cURL extension is
+    // unavailable or the endpoint is not configured, so callers (e.g. signup)
+    // never fatal on an undefined curl_init() or an empty URL.
+    if (! function_exists('curl_init')) {
+        log_api_interaction('make_api_request', 'ERROR', 'cURL extension not available; skipping request', ['url' => $url]);
+        return ['success' => false, 'error' => 'cURL extension not available'];
+    }
+    if (WAREHOUSE_API_URL === '' || WAREHOUSE_API_KEY === '') {
+        log_api_interaction('make_api_request', 'INFO', 'Warehouse API not configured; skipping request', ['url' => $url]);
+        return ['success' => false, 'error' => 'Warehouse API not configured'];
+    }
+
     $cache       = new CacheManager();
     $rateLimiter = new RateLimiter(API_RATE_LIMIT_MAX, 60);
 

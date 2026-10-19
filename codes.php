@@ -1,10 +1,22 @@
 <?php
-session_start();
 $tracking_number = $_REQUEST['tracking_number'] ?? null;
 include('config.php'); // database connection
 include('function.php'); // function connection
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
+$base_url = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http')
+    . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/';
+require_login($base_url);
+
+// Read-only AJAX lookups are GET and exempt from CSRF; every mutating POST below
+// requires a valid token.
+$is_mutation = isset($_REQUEST['user_basic_account_info_btn'])
+    || isset($_REQUEST['delivery-updatingBtn'])
+    || isset($_REQUEST['Pre-alert'])
+    || isset($_REQUEST['updatePreAltBtn'])
+    || isset($_REQUEST['pwd_update']);
+if ($is_mutation) {
+    require_csrf();
+}
 //==================================================User basic account info updating start===============================
 if (isset($_REQUEST['user_basic_account_info_btn'])) {
   // User  form input values
@@ -81,7 +93,7 @@ if (isset($_REQUEST['user_basic_account_info_btn'])) {
       header('location: user-dashboard/user-account.php?no-update-basic-data=');
       die();
     };
-    $File  = $_FILES['file']['name'];
+    $File  = uniqid('', true) . '.' . $fileExtension; // server-generated name, never trust client filename
   };
   if ($AddressType == '') {
     //$_SESSION['message-6'] =  'Please Enter Address Type';
@@ -116,9 +128,12 @@ if (isset($_REQUEST['user_basic_account_info_btn'])) {
 
     if ($_FILES['file']['name'] != '') {
 
-      unlink("uploaded-file/$oldImage");
+      $safeOldImage = basename($oldImage);
+      if ($safeOldImage !== '' && file_exists("uploaded-file/$safeOldImage")) {
+        unlink("uploaded-file/$safeOldImage");
+      }
       $fileTmp   =   $_FILES['file']['tmp_name'];
-      $File_name =   $_FILES['file']['name'];
+      $File_name =   $File; // server-generated random name set above
 
       if (move_uploaded_file($fileTmp, "uploaded-file/$File_name")) {
 
@@ -162,13 +177,17 @@ if (isset($_REQUEST['user_basic_account_info_btn'])) {
 //================================================== Authorized Users Start=============================== 
 if (isset($_REQUEST['delivery-updatingBtn'])) {
 
-  $first_name = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['first_name'])));
-  $last_name = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['last_name'])));
-  $IdType = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['IdType'])));
-  $first_name = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['IdNber'])));
+  $first_name = ltrim((string) ($_REQUEST['first_name'] ?? ''));
+  $last_name  = ltrim((string) ($_REQUEST['last_name'] ?? ''));
+  $id_type    = ltrim((string) ($_REQUEST['IdType'] ?? ''));
+  $id_number  = ltrim((string) ($_REQUEST['IdNber'] ?? ''));
 
-  $sql = "UPDATE authorized_users SET  first_name ='$first_name', last_name ='$last_name', IdType ='$IdType', IdNumber ='$first_name' WHERE id = $user_id";
-  if (mysqli_query($conn, $sql)) {
+  $statement = mysqli_prepare(
+    $conn,
+    'UPDATE authorized_users SET first_name = ?, last_name = ?, id_type = ?, id_number = ? WHERE user_id = ?'
+  );
+  mysqli_stmt_bind_param($statement, 'ssssi', $first_name, $last_name, $id_type, $id_number, $user_id);
+  if (mysqli_stmt_execute($statement)) {
 
     $_SESSION['message']   =  'Updating has been successfully';
     header('location: user-dashboard/user-account.php');
@@ -286,38 +305,38 @@ if (isset($_REQUEST['Pre-alert'])) {
 
 if (isset($_REQUEST['updatePreAltBtn'])) {
 
-  $tracking_number = $_REQUEST['tracking_number'];
+  $Pre_alert_id = (int) ($_REQUEST['Pre_alert_id'] ?? 0);
+  $tracking_number = mysqli_real_escape_string($conn, (string) ($_REQUEST['tracking_number'] ?? ''));
   if (empty($tracking_number)) {
     $_SESSION['message'] = 'Tracking Number is required.';
     header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
     die();
   }
-  $value_of_package = $_REQUEST['value_of_package'];
+  $value_of_package = (float) ($_REQUEST['value_of_package'] ?? 0);
   if (empty($value_of_package)) {
     $_SESSION['message'] = 'Value of Package is required.';
     header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
     die();
   }
-  $courier_company = $_REQUEST['courier_company'];
+  $courier_company = mysqli_real_escape_string($conn, (string) ($_REQUEST['courier_company'] ?? ''));
   if (empty($courier_company)) {
     $_SESSION['message'] = 'Courier Company is required.';
     header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
     die();
   }
-  $describe_package = $_REQUEST['describe_package'];
+  $describe_package = mysqli_real_escape_string($conn, (string) ($_REQUEST['describe_package'] ?? ''));
   if (empty($describe_package)) {
     $_SESSION['message'] = 'Package Description is required.';
     header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
     die();
   }
-  $merchant = $_REQUEST['merchant'];
+  $merchant = mysqli_real_escape_string($conn, (string) ($_REQUEST['merchant'] ?? ''));
   if (empty($merchant)) {
     $_SESSION['message'] = 'Merchant is required.';
     header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
     die();
   }
-  $Pre_alert_id = $_REQUEST['Pre_alert_id'];
-  $old_image = ltrim($_REQUEST['old_image']);
+  $old_image = basename(ltrim((string) ($_REQUEST['old_image'] ?? '')));
 
   // Get old tracking_number for packages update
   $sql_old = "SELECT tracking_number FROM pre_alert WHERE id = $Pre_alert_id AND User_id = $user_id";
@@ -374,7 +393,7 @@ if (isset($_REQUEST['updatePreAltBtn'])) {
     $File  = uniqid('', true) . '.' . $fileExtension;
   };
 
-  $sql = "UPDATE pre_alert SET tracking_number = '$tracking_number', value_of_package =  $value_of_package, courier_company = '$courier_company', merchant = '$merchant', describe_package ='$describe_package', invoice = '$File' WHERE id = $Pre_alert_id";
+  $sql = "UPDATE pre_alert SET tracking_number = '$tracking_number', value_of_package =  $value_of_package, courier_company = '$courier_company', merchant = '$merchant', describe_package ='$describe_package', invoice = '$File' WHERE id = $Pre_alert_id AND User_id = $user_id";
   if (mysqli_query($conn, $sql)) {
     // // Update corresponding package record
     // $sql_update_package = "UPDATE packages SET tracking_number = '$tracking_number', courier_company = '$courier_company', tracking_name = '$courier_company', describe_package = '$describe_package', value_of_package = $value_of_package, store = '$merchant' WHERE user_id = $user_id AND tracking_number = '$old_tracking_number'";
@@ -382,7 +401,9 @@ if (isset($_REQUEST['updatePreAltBtn'])) {
 
     if ($_FILES['file']['name'] != '') {
 
-      unlink("uploaded-file/$old_image");
+      if ($old_image !== '' && file_exists("uploaded-file/$old_image")) {
+        unlink("uploaded-file/$old_image");
+      }
       $fileTmp   =   $_FILES['file']['tmp_name'];
       $File_name =   $File;
 
@@ -416,14 +437,17 @@ if (isset($_REQUEST['updatePreAltBtn'])) {
 
 if (isset($_REQUEST['pwd_update'])) {
 
-  $pwd = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['NewPassword'])));
-  $hash_password =  md5('pync' . $pwd);
-  $sql = "UPDATE  users SET Password_Hash = '$hash_password' where id = $user_id";
-  if (mysqli_query($conn, $sql)) {
-
+  $pwd = (string) ($_REQUEST['NewPassword'] ?? '');
+  if (strlen($pwd) < 8 || !preg_match('/[A-Z]/', $pwd)) {
+    echo 422;
+    die();
+  }
+  $hash_password = password_hash($pwd, PASSWORD_DEFAULT);
+  $statement = mysqli_prepare($conn, 'UPDATE users SET password_hash = ? WHERE id = ?');
+  mysqli_stmt_bind_param($statement, 'si', $hash_password, $user_id);
+  if (mysqli_stmt_execute($statement)) {
     echo 200;
   } else {
-
     echo 401;
   }
 };
@@ -434,7 +458,7 @@ if (isset($_REQUEST['pwd_update'])) {
 
 if (isset($_REQUEST['addresType'])) {
 
-  $address_type =  $_REQUEST['addresType'];
+  $address_type = mysqli_real_escape_string($conn, (string) $_REQUEST['addresType']);
 
   $sql = "SELECT * FROM delivery_preference WHERE user_id = $user_id AND address_type = '$address_type' "; //checking if address  saved
   if (mysqli_num_rows(mysqli_query($conn, $sql)) == 1) {
@@ -474,7 +498,7 @@ if (isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) && $_REQUEST['showing
          exit;
      }
      error_log("Querying pre_alert for id: " . $Pre_alert_id);
-     $sql     = "SELECT * FROM pre_alert WHERE id = $Pre_alert_id";
+     $sql     = "SELECT * FROM pre_alert WHERE id = $Pre_alert_id AND User_id = $user_id";
      $result  = mysqli_query($conn, $sql);
      if (!$result) {
        error_log("Database query failed: " . mysqli_error($conn));

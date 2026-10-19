@@ -1,5 +1,4 @@
 <?php
-session_start();
 include 'config.php';
 include 'function.php';
 // Ensure only admins can update payment status
@@ -19,6 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+if (!verify_csrf()) {
+    http_response_code(419);
+    echo json_encode(['error' => 'Invalid or expired request token']);
+    exit;
+}
+
 $tracking = isset($_POST['tracking']) ? mysqli_real_escape_string($conn, $_POST['tracking']) : '';
 $new_status = isset($_POST['status']) ? mysqli_real_escape_string($conn, $_POST['status']) : '';
 
@@ -28,10 +33,12 @@ if (!$tracking || !in_array($new_status, ['Paid', 'Pending'])) {
     exit;
 }
 
-// Ensure column exists
-$add_col_sql = "ALTER TABLE packages ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'Pending'";
-// Some MySQL versions don't support IF NOT EXISTS for ADD COLUMN; try safely
-mysqli_query($conn, $add_col_sql);
+// Ensure the payment_status column exists (portable across MySQL and MariaDB;
+// MySQL 8 rejects the MariaDB-only "ADD COLUMN IF NOT EXISTS" syntax).
+$column_exists = mysqli_query($conn, "SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'packages' AND COLUMN_NAME = 'payment_status'");
+if (!$column_exists || mysqli_num_rows($column_exists) === 0) {
+    mysqli_query($conn, "ALTER TABLE packages ADD COLUMN payment_status VARCHAR(20) DEFAULT 'Pending'");
+}
 
 // Fetch package
 $sql = "SELECT * FROM packages WHERE tracking_number = '" . mysqli_real_escape_string($conn, $tracking) . "' LIMIT 1";

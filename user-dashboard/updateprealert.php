@@ -1,6 +1,5 @@
 <?php
 // initialize session
-session_start();
 include '../config.php';                             // database connection
 include '../function.php';                           // function
 include '../user-area/authorized-user.php';          // function
@@ -253,7 +252,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
               </li>
               <li class="nav-item">
                 <span class="op-7">Welcome</span>
-                <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
+                <span class="fw-bold"><?php echo e(user_account_information()['first_name']); ?></span>
               </li>
             </ul>
           </div>
@@ -295,7 +294,8 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
 
                 ?>
                     <form class="Pre_alert_updating" action="../codes.php" method="POST" enctype="multipart/form-data">
-                      <input type="text" name="Pre_alert_id" value="<?php echo $rows['id']; ?>" hidden />
+                      <?php echo csrf_field(); ?>
+                      <input type="text" name="Pre_alert_id" value="<?php echo e($rows['id']); ?>" hidden />
                       <div class="card-header">
                         <div class="card-title">
                           <h1 class="UpdatePrealt">Update Pre-alert</h1>
@@ -306,7 +306,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                           <div class="col-md-6 col-lg-4">
                             <div class="form-group">
                               <label for="TrackingNumber">Tracking Number</label>
-                              <input value="<?php echo $rows['tracking_number']; ?>"
+                              <input value="<?php echo e($rows['tracking_number']); ?>"
                                 name="tracking_number"
                                 type="text" required
                                 class="form-control"
@@ -315,7 +315,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                             </div>
                             <div class="form-group">
                               <label for="value">Value of Package (USD)</label>
-                              <input value="<?php echo $rows['value_of_package']; ?>"
+                              <input value="<?php echo e($rows['value_of_package']); ?>"
                                 name="value_of_package" required
                                 type="number"
                                 class="form-control"
@@ -337,13 +337,13 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                             </div>
                             <div class="form-group">
                               <label for="comment">Describe Package Content (eg. Sun-glasses)</label>
-                              <textarea name="describe_package" required class="form-control" id="comment" rows="3"><?php echo $rows['describe_package']; ?></textarea>
+                              <textarea name="describe_package" required class="form-control" id="comment" rows="3"><?php echo e($rows['describe_package']); ?></textarea>
                             </div>
                           </div>
                           <div class="col-md-6 col-lg-4">
                             <div class="form-group">
                               <label for="Store">Merchant (source of purchase)</label>
-                              <input name="merchant" value="<?php echo $rows['merchant']; ?>" required
+                              <input name="merchant" value="<?php echo e($rows['merchant']); ?>" required
                                 type="text"
                                 class="form-control"
                                 id="Store"
@@ -356,7 +356,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                               <input
                                 hidden
                                 name='old_image'
-                                value='<?php echo $rows['invoice']; ?>'
+                                value='<?php echo e($rows['invoice']); ?>'
                                 type="text" />
 
                               <div class="invoice">
@@ -381,12 +381,12 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                   ?>
                                     <span style=" display: -webkit-box;  -webkit-line-clamp: 1;  -webkit-box-orient: vertical;  overflow: hidden;  width: 180px;">
 
-                                      <?php echo $rows['invoice']; ?>
+                                      <?php echo e($rows['invoice']); ?>
 
                                     </span>
                                     <a style="width: 18px; position: absolute;  right: 10px;  top: 11px; "
                                       class="d-flex"
-                                      href="../uploaded-file/<?php echo $rows['invoice']; ?>">
+                                      href="../uploaded-file/<?php echo e($rows['invoice']); ?>">
                                       <img
                                         width='18px;'
                                         src="assets/img/hide.png"

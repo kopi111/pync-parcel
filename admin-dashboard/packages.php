@@ -1,7 +1,6 @@
 
 <?php
     // initialize session
-    session_start();
     include '../config.php';   // database connection
     include '../function.php'; // function comes from user dashboard
     include 'function.php';    // function comes from admin dashboard
@@ -320,6 +319,7 @@
                                         </select>
                                     </form>
                                 <form action="pull_packages.php" method="POST" style="margin:0;">
+                                    <?php echo csrf_field(); ?>
                                     <button type="submit" class="btn btn-warning">Pull Packages from
                                         Warehouse</button>
                                 </form>
@@ -411,11 +411,11 @@
                             }
                         ?>
             <tr>
-                <td><?php echo $rows['tracking_number']; ?></td>
+                <td><?php echo e($rows['tracking_number']); ?></td>
                 <td><?php echo isset($account_number) ? htmlspecialchars($account_number) : '—'; ?></td>
                 <!-- <td>Warehouse Processed</td> -->
-                <td><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : '-'; ?></td>
-                <td class="text-center"><?php echo($rows['weight'] && $rows['weight'] != 0) ? $rows['weight'] . " lbs" : '—'; ?></td>
+                <td><?php echo $rows['courier_company'] ? e(ucfirst($rows['courier_company'])) : '-'; ?></td>
+                <td class="text-center"><?php echo($rows['weight'] && $rows['weight'] != 0) ? e($rows['weight']) . " lbs" : '—'; ?></td>
                 <!-- <td><?php 
                     // Get delivery region from user account
                     $delivery_region = '';
@@ -432,8 +432,8 @@
                     }
                     echo htmlspecialchars($delivery_region);
                 ?></td> -->
-                <td><span class="item_value"><?php echo($rows['value_of_package'] && $rows['value_of_package'] != "0") ? "$ " . $rows['value_of_package'] : '—'; ?></span></td>
-                <td><?php echo $rows['describe_package']; ?></td>
+                <td><span class="item_value"><?php echo($rows['value_of_package'] && $rows['value_of_package'] != "0") ? "$ " . e($rows['value_of_package']) : '—'; ?></span></td>
+                <td><?php echo e($rows['describe_package']); ?></td>
                 <!-- <td> <span class="status">Undergoing Customs Clearance</span> </td> -->
                 <!-- <td><span class="Inv-status">Open</span></td> -->
                 <!-- <td> <span class="invoice">N/A</span></td> -->
@@ -469,17 +469,17 @@
                             $customer_name = $package['firstName'] . ' ' . $package['lastName'];
                         ?>
             <tr>
-                <td><?php echo $package['trackingName']; ?></td>
+                <td><?php echo e($package['trackingName']); ?></td>
                 <td>Demo</td>
-                <td><?php echo $package['tracking']; ?></td>
+                <td><?php echo e($package['tracking']); ?></td>
                 <!-- <td><?php echo $package['courierName']; ?></td> -->
-                <td><?php echo $package['description']; ?></td>
-                <td> <span class="customer_name">                                                                                                                                                                                                                                                                                                                                       <?php echo $customer_name; ?></span> </td>
-                <td class="text-end"><?php echo($package['weight'] && $package['weight'] != 0) ? $package['weight'] . " lbs" : '—'; ?></td>
+                <td><?php echo e($package['description']); ?></td>
+                <td> <span class="customer_name">                                                                                                                                                                                                                                                                                                                                       <?php echo e($customer_name); ?></span> </td>
+                <td class="text-end"><?php echo($package['weight'] && $package['weight'] != 0) ? e($package['weight']) . " lbs" : '—'; ?></td>
                 <!-- <td><?php echo $package['dimLength'] . ' x ' . $package['dimWidth'] . ' x ' . $package['dimHeight']; ?></td> -->
-                <td><?php echo $package['shipmentStatus']; ?></td>
-                <td><?php echo $package['shipmentType']; ?></td>
-                <td><?php echo $package['branch']; ?></td>
+                <td><?php echo e($package['shipmentStatus']); ?></td>
+                <td><?php echo e($package['shipmentType']); ?></td>
+                <td><?php echo e($package['branch']); ?></td>
                 <!-- <td><?php echo $package['tag']; ?></td> -->
                 <!-- <td> <span class="item_value">$<?php echo rand(50, 500); ?></span></td> -->
                 <!-- <td> <span class="status">Undergoing Customs Clearance</span> </td> -->
@@ -635,7 +635,7 @@
                         fetch('../update_payment_status.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: 'tracking=' + encodeURIComponent(tracking) + '&status=' + encodeURIComponent(status)
+                            body: 'tracking=' + encodeURIComponent(tracking) + '&status=' + encodeURIComponent(status) + '&csrf_token=<?php echo csrf_token(); ?>'
                         }).then(function(res){ return res.json(); }).then(function(data){
                             if (data && data.success) {
                                 alert('Payment status updated to ' + data.new_status);

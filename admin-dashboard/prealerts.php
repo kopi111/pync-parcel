@@ -1,6 +1,5 @@
 <?php
 // initialize session
-session_start();
 include('../config.php'); // database connection
 include('../function.php'); // function comes from user dashboard
 include('function.php'); // function comes from admin dashboard
@@ -242,7 +241,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
               </li>
               <li class="nav-item">
                 <span class="op-7">Welcome</span>
-                <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
+                <span class="fw-bold"><?php echo e(user_account_information()['first_name']); ?></span>
               </li>
             </ul>
           </div>
@@ -341,21 +340,21 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
 
                         ?>
                           <tr>
-                            <td><?php echo $rows['tracking_number']; ?></td>
-                            <td><?php echo $rows['courier_company']; ?></td>
-                            <td><?php echo $rows['describe_package']; ?></td>
+                            <td><?php echo e($rows['tracking_number']); ?></td>
+                            <td><?php echo e($rows['courier_company']); ?></td>
+                            <td><?php echo e($rows['describe_package']); ?></td>
                             <td> <span class="store-value"><?php echo htmlspecialchars($rows['merchant']); ?></span> </td>
                             <td> <span class="type_label">Pre-alert</span> </td>
                             <td><span style="border: 1px solid #ddd;  padding: 1px;">N/A</span></td>
-                            <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
+                            <td> <span class="item_value">$<?php echo e($rows['value_of_package']); ?></span></td>
                             <td><?php echo timeAgo($rows['created_at']); ?></td>
                             <td>
                               <ul class="action-list">
                                 <li>
                               <a
-                                    data-prealert-id='<?php echo $rows['id']; ?>'
-                                    data-customer-name='<?php echo $customer_name; ?>'
-                                    data-account-number='<?php echo $account_number; ?>'
+                                    data-prealert-id='<?php echo e($rows['id']); ?>'
+                                    data-customer-name='<?php echo e($customer_name); ?>'
+                                    data-account-number='<?php echo e($account_number); ?>'
                                     class="view_user_information"
                                     href="#">
                                     <i class="fa-solid fa-eye"></i>

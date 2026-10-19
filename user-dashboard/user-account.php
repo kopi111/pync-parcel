@@ -1,6 +1,4 @@
-<?php session_start();  // initialize session
-
-
+<?php
 include('../config.php'); // database connection
 include('../function.php'); // function
 include('../user-area/authorized-user.php'); // function
@@ -8,17 +6,24 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
 
 if (isset($_REQUEST['pwd_update'])) {
 
-  $pwd = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['New-password'])));
-  $hash_password =  md5('pync' . $pwd);
-  $sql = "UPDATE  users SET Password_Hash = '$hash_password' where id = $user_id ";
-  if (mysqli_query($conn, $sql)) {
-
+  require_csrf();
+  $pwd = (string) ($_REQUEST['New-password'] ?? '');
+  if (strlen($pwd) < 8 || !preg_match('/[A-Z]/', $pwd)) {
+    $_SESSION['message'] = "<span style='color:red'>Password must be at least 8 characters and include a capital letter.</span>";
+    header('location: user-account.php');
+    exit();
+  }
+  $hash_password = password_hash($pwd, PASSWORD_DEFAULT);
+  $statement = mysqli_prepare($conn, 'UPDATE users SET password_hash = ? WHERE id = ?');
+  mysqli_stmt_bind_param($statement, 'si', $hash_password, $user_id);
+  if (mysqli_stmt_execute($statement)) {
     $_SESSION['message'] = 'Password has been updated!';
     header('location: user-account.php');
+    exit();
   } else {
-
     $_SESSION['message'] = "<span style='color:red'>Something went wrong.</span>";
     header('location: user-account.php');
+    exit();
   }
 };
 ?>
@@ -353,6 +358,7 @@ if (isset($_REQUEST['pwd_update'])) {
                     <div class="tab-pane fade account_content" id="pills-home-nobd" role="tabpanel" aria-labelledby="pills-home-tab-nobd">
                       <!-- my account -->
                       <form enctype="multipart/form-data" id="account-setting" method="POST" action='../codes.php'>
+                        <?php echo csrf_field(); ?>
                         <div class="card-header">
                           <div class="card-title">
                             <h1 class="acntSetHeading">Account Number:
@@ -687,7 +693,8 @@ if (isset($_REQUEST['pwd_update'])) {
                       </form>
                     </div>
                     <div class="tab-pane fade pwd_reset_content" id="pills-contact-nobd" role="tabpanel" aria-labelledby="pills-contact-tab-nobd">
-                      <form action="user-account.php" id='password-reset' method="GET">
+                      <form action="user-account.php" id='password-reset' method="POST">
+                        <?php echo csrf_field(); ?>
                         <div class="card-header">
                           <div class="card-title"><!-- <h1 class="acntSetHeading">Account Setting</h1>--></div>
                         </div>
@@ -746,7 +753,8 @@ if (isset($_REQUEST['pwd_update'])) {
                     </div>
                   </div>
                   <div class="tab-pane fade pending_payment AuthorizedUser_content" id="pills-AuthorizedUsers-nobd" role="tabpanel" aria-labelledby="pills-profile-tab-nobd">
-                    <form action="../codes.php" id="delivery-setting" action="GET">
+                    <form action="../codes.php" id="delivery-setting" method="POST">
+                      <?php echo csrf_field(); ?>
                       <div class="card-body">
                         <div class="row">
                           <div class="col-md-6">

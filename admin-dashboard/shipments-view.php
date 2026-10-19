@@ -1,6 +1,5 @@
 <?php
     // initialize session
-    session_start();
 	include('../config.php'); // database connection
    	include('../function.php'); // function comes from user dashboard
    	include('function.php'); // function comes from admin dashboard
@@ -294,7 +293,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
+                      <span class="fw-bold"><?php echo e(user_account_information()['first_name']) ; ?></span>
                 </li>
               </ul>
             </div>
@@ -354,7 +353,7 @@
 				    </div>
 				    <div class="Shipment_title_area">
 					   <p class="title">Shipments</p>
-					   <h2 class="Shipment_tracking"><?php echo htmlspecialchars($shipment['shipment_number']); ?> <img src="assets/img/<?php echo strtolower($shipment['type']); ?>.png" alt="<?php echo $shipment['type']; ?>" /></h2>
+					   <h2 class="Shipment_tracking"><?php echo htmlspecialchars($shipment['shipment_number']); ?> <img src="assets/img/<?php echo strtolower($shipment['type']); ?>.png" alt="<?php echo e($shipment['type']); ?>" /></h2>
 						<span class="Shipment-status"><?php echo htmlspecialchars($shipment['status']); ?></span>
 						<p class="created_date">Created on <?php echo date('M d, Y, g:i A', strtotime($shipment['departure_date'] ?? 'now')); ?></p>
 						<p class="Shipment-type"><?php echo htmlspecialchars($shipment['type']); ?></p>

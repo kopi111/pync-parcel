@@ -1,5 +1,5 @@
-<?php 
-session_start();
+<?php
+require_once __DIR__ . '/function.php';
 
 ?>
 
@@ -83,16 +83,17 @@ session_start();
 					
 					if( isset($_REQUEST['mailsent']) ){ 
 					
-					  $mail = $_REQUEST['mailsent'] ;
-					  echo "<a style='color:#357d69;font-size: 20px;  
-					       text-decoration: none;' 
-						   class='text-center p-4 d-block' href='user-area/reset-password.php?email=$mail&AnotherRequest'> 
+					  $mail = e($_REQUEST['mailsent']) ;
+					  echo "<a style='color:#357d69;font-size: 20px;
+					       text-decoration: none;'
+						   class='text-center p-4 d-block' href='user-area/reset-password.php?email=$mail&AnotherRequest'>
 						   Didn't get any mail? 
 						  </a>";
 					}else{ ?>
 					
 						<div class="border-0 p-4">
 							<form id="myForm" action="user-area/reset-password.php" method="GET">
+									  <?php echo csrf_field(); ?>
 								  <!-- Email address input-->
 								 <div class="mb-3">
 									<label for="email">Email address</label>

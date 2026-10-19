@@ -1,6 +1,5 @@
 <?php
     // initialize session
-    session_start();
     include '../config.php';                             // database connection
     include '../function.php';                           // function
     include '../user-area/authorized-user.php';          // function
@@ -253,7 +252,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
+                      <span class="fw-bold"><?php echo e(user_account_information()['first_name']); ?></span>
                 </li>
               </ul>
             </div>
@@ -267,6 +266,7 @@
               <div class="col-md-12">
                 <div class="card">
 				<form method="POST" class="create_PreAlert" action="../codes.php" enctype="multipart/form-data">
+				  <?php echo csrf_field(); ?>
                   <div class="card-header">
                     <div class="card-title"><h1 class="ctePrealt">Create Pre-alert</h1></div>
                   </div>
@@ -406,16 +406,16 @@
                           <tr>
                             <td class="text-end edit-prealt">
                               <span class="prealert-edit-btn">
-                                <a href="updateprealert.php?pre_alert_id=<?php echo isset($rows['id']) ? $rows['id'] : ''; ?>">
+                                <a href="updateprealert.php?pre_alert_id=<?php echo isset($rows['id']) ? e($rows['id']) : ''; ?>">
                                 <img src="assets\img\edit.png" alt="edit" />
                               </a>
                               </span>
-                                <?php echo isset($rows['tracking_number']) ? $rows['tracking_number'] : ''; ?>
+                                <?php echo isset($rows['tracking_number']) ? e($rows['tracking_number']) : ''; ?>
                             </td>
-                            <td><?php echo isset($rows['courier_company']) ? $rows['courier_company'] : ''; ?></td>
-                            <td><?php echo isset($rows['merchant']) ? $rows['merchant'] : ''; ?></td>
-                            <td><?php echo isset($rows['value_of_package']) ? $rows['value_of_package'] : ''; ?></td>
-                            <td><?php echo isset($rows['describe_package']) ? $rows['describe_package'] : ''; ?></td>
+                            <td><?php echo isset($rows['courier_company']) ? e($rows['courier_company']) : ''; ?></td>
+                            <td><?php echo isset($rows['merchant']) ? e($rows['merchant']) : ''; ?></td>
+                            <td><?php echo isset($rows['value_of_package']) ? e($rows['value_of_package']) : ''; ?></td>
+                            <td><?php echo isset($rows['describe_package']) ? e($rows['describe_package']) : ''; ?></td>
                             <td><?php echo isset($rows['created_at']) ? date('d/m/y', strtotime($rows['created_at'])) : ''; ?></td>
                           </tr>
 						  <?php

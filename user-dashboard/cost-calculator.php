@@ -1,6 +1,5 @@
 <?php 
     // initialize session
-    session_start();  
 	include('../config.php'); // database connection
 	include('../function.php'); // function
     include('../user-area/authorized-user.php'); // function
@@ -254,7 +253,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
+                      <span class="fw-bold"><?php echo e(user_account_information()['first_name']); ?></span>
                 </li>
               </ul>
             </div>

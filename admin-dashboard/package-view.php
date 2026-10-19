@@ -1,6 +1,5 @@
 <?php
     // initialize session
-    session_start();
     include '../config.php';   // database connection
     include '../function.php'; // function comes from user dashboard
     include 'function.php';    // function comes from admin dashboard
@@ -85,6 +84,7 @@
 
     // Handle package update
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_package'])) {
+        require_csrf();
         $courier_charge    = mysqli_real_escape_string($conn, $_POST['courier_charge'] ?? '');
         $tracking_progress = mysqli_real_escape_string($conn, $_POST['tracking_progress'] ?? '');
         $tracking_date     = mysqli_real_escape_string($conn, $_POST['tracking_date'] ?? '');
@@ -442,7 +442,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold">                                             <?php echo user_account_information()['first_name']; ?> </span>
+                      <span class="fw-bold">                                             <?php echo e(user_account_information()['first_name']); ?> </span>
                 </li>
               </ul>
             </div>
@@ -733,6 +733,7 @@
 			  </div>
 		  <div class="modal-body">
 		    <form action="" method="POST" enctype="multipart/form-data">
+				<?php echo csrf_field(); ?>
 				<input type="hidden" name="update_package" value="1">
 				<div class="form-group change-value">
 					<label for="courier_charge">Courier charge<span class="mandatory_field">*</span></label>

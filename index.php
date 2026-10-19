@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/helpers.php';
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name  
 
 ?>
@@ -60,9 +61,8 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
             <li class="nav-item">
 
               <?php
-              if (isset($_COOKIE['user_id'])) {
+              if (is_logged_in()) {
 
-                $user_Data = json_decode($_COOKIE['user_id']);
 
                 echo  "
 									       <a class='nav-link me-lg-3' href='user-dashboard/index.php'> 
@@ -83,7 +83,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
               ?>
             </li>
             <?php
-            if (isset($_COOKIE['user_id'])) { ?>
+            if (is_logged_in()) { ?>
               <li class="nav-item sign_out_icon">
                 <a class="nav-link me-lg-3" href="user-area/log-out.php">
                   <i class="bi bi-box-arrow-right "></i>
@@ -104,7 +104,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
         <h2 class=" mb-3">Love it sooner.</h2>
         <?php
 
-        if (!isset($_COOKIE['user_id'])) {
+        if (!is_logged_in()) {
 
           // Use a styled anchor for the CTA so mobile and desktop match
           echo "<a href='sign-up.php' class='btn-ship'>Ship Now</a>";

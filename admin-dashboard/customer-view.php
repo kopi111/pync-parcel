@@ -1,6 +1,5 @@
 <?php
 // initialize session
-session_start();
 include('../config.php'); // database connection
 include('../function.php'); // function comes from user dashboard
 include('function.php'); // function comes from admin dashboard
@@ -273,7 +272,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
               </li>
               <li class="nav-item">
                 <span class="op-7">Welcome</span>
-                <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
+                <span class="fw-bold"><?php echo e(user_account_information()['first_name']); ?></span>
               </li>
             </ul>
           </div>
@@ -325,9 +324,9 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                 ?>
                   <div class="col-md-3 col-lg-2">
                     <p>Customer info</p>
-                    <h3><?php echo $_REQUEST['user_name']; ?></h3>
-                    <h4><?php echo $_REQUEST['account_number']; ?></h4>
-                    <div class="text-center"><span><?php echo $user_row['status'] ?? 'unverified'; ?></span></div>
+                    <h3><?php echo e($_REQUEST['user_name']); ?></h3>
+                    <h4><?php echo e($_REQUEST['account_number']); ?></h4>
+                    <div class="text-center"><span><?php echo e($user_row['status'] ?? 'unverified'); ?></span></div>
                   </div>
                   <div class="col-md-3 col-lg-2">
                     <p class="d-flex justify-content-between"> <span>Credit Balance </span>
@@ -366,7 +365,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                   <div class="col-md-3 col-lg-2">
 
                     <p>Delivery Region</p>
-                    <h3><?php echo ($user_row['region'] === 'NA') ? '' : ($user_row['region'] ?? 'N/A'); ?></h3>
+                    <h3><?php echo ($user_row['region'] === 'NA') ? '' : e($user_row['region'] ?? 'N/A'); ?></h3>
                   </div>
                   <div class="package-details customerview">
                     <div class="card">
@@ -443,11 +442,11 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                       while ($rows = mysqli_fetch_array($result)) {
                                       ?>
 
-                                        <tr data-type="<?php echo $rows['package_type']; ?>">
-                                          <td><?php echo $rows['tracking_number']; ?></td>
-                                          <td><?php echo $rows['tracking_name'] ? ucfirst($rows['tracking_name']) : 'N/A'; ?></td>
-                                          <td><?php echo $rows['package_type']; ?></td>
-                                          <td><?php echo $rows['describe_package']; ?></td>
+                                        <tr data-type="<?php echo e($rows['package_type']); ?>">
+                                          <td><?php echo e($rows['tracking_number']); ?></td>
+                                          <td><?php echo $rows['tracking_name'] ? e(ucfirst($rows['tracking_name'])) : 'N/A'; ?></td>
+                                          <td><?php echo e($rows['package_type']); ?></td>
+                                          <td><?php echo e($rows['describe_package']); ?></td>
                                           <!-- <td> <span class="customer_name"><?php echo $_REQUEST['user_name']; ?></span> </td> -->
                                           <td>
                                             <?php
@@ -461,13 +460,13 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                             }
                                             ?>
                                           </td>
-                                          <td><?php echo $rows['weight'] ?? 'N/A'; ?></td>
+                                          <td><?php echo e($rows['weight'] ?? 'N/A'); ?></td>
                                           <td><?php echo timeAgo($rows['created_at']); ?></td>
                                           <td>
                                             <ul class="action-list">
                                               <li>
                                                 <?php if ($rows['package_type'] === 'Pre-alert') { ?>
-                                                  <a href="#" data-prealert-id="<?php echo $rows['id']; ?>" data-customer-name="<?php echo $_REQUEST['user_name']; ?>" data-account-number="<?php echo $_REQUEST['account_number']; ?>" class="view_prealert_customer_view">
+                                                  <a href="#" data-prealert-id="<?php echo e($rows['id']); ?>" data-customer-name="<?php echo e($_REQUEST['user_name']); ?>" data-account-number="<?php echo e($_REQUEST['account_number']); ?>" class="view_prealert_customer_view">
                                                     <i class="fa-solid fa-eye"></i>
                                                   </a>
                                                 <?php } else { ?>
@@ -527,7 +526,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
 
                                   while ($rows = mysqli_fetch_array($result)) {
 
-                                    $amount = isset($rows['add_new_credit']) ? $rows['add_new_credit'] : 0;
+                                    $amount = isset($rows['add_new_credit']) ? e($rows['add_new_credit']) : 0;
                                     $timestamp = $rows['created_at'];
                                     $date = new DateTime($timestamp);
                                     $created_at =  $date->format("M j, Y, g:i A");
@@ -561,31 +560,31 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                 <p class="title" style="font-size: 30px; font-weight: 900; color: #E87946; font-weight: 700;text-align:center">Basic Information</p>
                                 <div class="Tracking-value">
                                   <span class="heading">First Name</span>
-                                  <span class="value"><?php echo $rows['first_name']; ?></span>
+                                  <span class="value"><?php echo e($rows['first_name']); ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Last Name</span>
-                                  <span class="value"><?php echo $rows['last_name']; ?></span>
+                                  <span class="value"><?php echo e($rows['last_name']); ?></span>
                                 </div>
 
                                 <div class="Tracking-value">
                                   <span class="heading">Phone</span>
-                                  <span class="value"><?php echo $rows['phone_number'] ?? 'N/A'; ?></span>
+                                  <span class="value"><?php echo e($rows['phone_number'] ?? 'N/A'); ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Email Address</span>
-                                  <span class="value"><?php echo $rows['email_address'] ?? 'N/A'; ?></span>
+                                  <span class="value"><?php echo e($rows['email_address'] ?? 'N/A'); ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Date of Birth</span>
                                   <span class="value">
-                                    <?php echo (!empty($rows['date_of_birth'])) ? $rows['date_of_birth'] : 'N/A'; ?>
+                                    <?php echo (!empty($rows['date_of_birth'])) ? e($rows['date_of_birth']) : 'N/A'; ?>
                                   </span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading"> Gender</span>
                                   <span class="value">
-                                    <?php echo (!empty($rows['gender'])) ? $rows['gender'] : 'N/A'; ?>
+                                    <?php echo (!empty($rows['gender'])) ? e($rows['gender']) : 'N/A'; ?>
                                   </span>
                                 </div>
                                 <div class="Tracking-value">
@@ -596,10 +595,10 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
 
                                     if (!empty($rows['file'])) {
 
-                                      $file = $rows['file'];
-                                      echo " 
-											  <a href='../uploaded-file/$file'> 
-											      <img width='40px' height='40px' src='../uploaded-file/$file' alt='' /> 
+                                      $file = e($rows['file']);
+                                      echo "
+											  <a href='../uploaded-file/$file'>
+											      <img width='40px' height='40px' src='../uploaded-file/$file' alt='' />
 											   </a>
 											";
                                     } else {
@@ -621,27 +620,27 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                 <div class="Tracking-value">
                                   <span class="heading">Address Type</span>
                                   <span class="value">
-                                    <?php echo (!empty($rows['address_type'])) ? $rows['address_type'] : 'N/A';  ?></span>
+                                    <?php echo (!empty($rows['address_type'])) ? e($rows['address_type']) : 'N/A';  ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Parish</span>
                                   <span class="value">
-                                    <?php echo (!empty($rows['parish'])) ? $rows['parish'] : 'N/A'; ?></span>
+                                    <?php echo (!empty($rows['parish'])) ? e($rows['parish']) : 'N/A'; ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Region</span>
                                   <span class="value">
-                                    <?php echo (!empty($rows['region'])) ? $rows['region'] : 'N/A'; ?></span>
+                                    <?php echo (!empty($rows['region'])) ? e($rows['region']) : 'N/A'; ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Address Line 1</span>
                                   <span class="value">
-                                    <?php echo (!empty($rows['address_line1'])) ? $rows['address_line1'] : 'N/A'; ?></span>
+                                    <?php echo (!empty($rows['address_line1'])) ? e($rows['address_line1']) : 'N/A'; ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Address Line 2</span>
                                   <span class="value">
-                                    <?php echo (!empty($rows['address_line2'])) ? $rows['address_line2'] : 'N/A'; ?></span>
+                                    <?php echo (!empty($rows['address_line2'])) ? e($rows['address_line2']) : 'N/A'; ?></span>
                                 </div>
                               </div>
                               <div class="col-md-6">
@@ -656,19 +655,19 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
 
                                   ?>
                                   <span class="heading">First Name</span>
-                                  <span class="value"><?php echo (!empty($auth_rows['first_name'])) ? $auth_rows['first_name'] : 'N/A'; ?></span>
+                                  <span class="value"><?php echo (!empty($auth_rows['first_name'])) ? e($auth_rows['first_name']) : 'N/A'; ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Last</span>
-                                  <span class="value"><?php echo (!empty($auth_rows['last_name'])) ? $auth_rows['last_name'] : 'N/A'; ?></span>
+                                  <span class="value"><?php echo (!empty($auth_rows['last_name'])) ? e($auth_rows['last_name']) : 'N/A'; ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Identification Type</span>
-                                  <span class="value"><?php echo (!empty($auth_rows['id_type'])) ? $auth_rows['id_type'] : 'N/A'; ?></span>
+                                  <span class="value"><?php echo (!empty($auth_rows['id_type'])) ? e($auth_rows['id_type']) : 'N/A'; ?></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">ID Number</span>
-                                  <span class="value"><?php echo (!empty($auth_rows['id_number'])) ? $auth_rows['id_number'] : 'N/A'; ?></span>
+                                  <span class="value"><?php echo (!empty($auth_rows['id_number'])) ? e($auth_rows['id_number']) : 'N/A'; ?></span>
                                 </div>
                               </div>
                               <div class="col-md-6">
@@ -679,7 +678,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">Line 2 : </span>
-                                  <span class="value">STE113 - <span title='Account Number' style="text-transform: uppercase;"><?php echo strtoupper($_REQUEST['account_number']); ?></span></span>
+                                  <span class="value">STE113 - <span title='Account Number' style="text-transform: uppercase;"><?php echo e(strtoupper($_REQUEST['account_number'])); ?></span></span>
                                 </div>
                                 <div class="Tracking-value">
                                   <span class="heading">City : </span>
@@ -767,6 +766,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
             </div>
             <div class="modal-body">
               <form action="codes.php" method="GET" class="Add_credit">
+                <?php echo csrf_field(); ?>
                 <div class="form-group change-value">
                   <div class="credit_titile">
                     <h2>Credit</h2>
@@ -799,9 +799,9 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                   </div>
                 </div>
                 <div class="card-action d-flex justify-content-center">
-                  <input hidden type="text" name="user_id" value="<?php echo $_REQUEST['user_id']; ?>" />
-                  <input hidden type="text" name="user_name" value="<?php echo $_REQUEST['user_name']; ?>" />
-                  <input hidden type="text" name="account_number" value="<?php echo $_REQUEST['account_number']; ?>" />
+                  <input hidden type="text" name="user_id" value="<?php echo e($_REQUEST['user_id']); ?>" />
+                  <input hidden type="text" name="user_name" value="<?php echo e($_REQUEST['user_name']); ?>" />
+                  <input hidden type="text" name="account_number" value="<?php echo e($_REQUEST['account_number']); ?>" />
                   <input hidden type="text" name="new_credit_btn" />
                   <button name="new_credit_btn" type="submit" class="my-4 submit">
                     <img class="spinner" style="display:none;" width="20px" src="assets/img/spinner.gif" alt="" />
@@ -1076,7 +1076,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
   ?>
     <script>
       // ===== alertify======
-      alertify.success("<span style='color:yellow; display:block'> Success</span> <?php echo  $_SESSION['message']; ?>");
+      alertify.success("<span style='color:yellow; display:block'> Success</span> <?php echo e($_SESSION['message']); ?>");
     </script>
   <?php
     unset($_SESSION['message']);
@@ -1126,7 +1126,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
       fetch('../update_payment_status.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'tracking=' + encodeURIComponent(tracking) + '&status=' + encodeURIComponent(status)
+        body: 'tracking=' + encodeURIComponent(tracking) + '&status=' + encodeURIComponent(status) + '&csrf_token=<?php echo csrf_token(); ?>'
       }).then(function(res){ return res.json(); }).then(function(data){
         if (data && data.success) {
           alert('Payment status updated to ' + data.new_status);

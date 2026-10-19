@@ -1,6 +1,5 @@
 <?php
 // initialize session
-session_start();
 include('../config.php'); // database connection
 include('../function.php'); // function comes from user dashboard
 include('function.php'); // function comes from admin dashboard
@@ -248,7 +247,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
               </li>
               <li class="nav-item">
                 <span class="op-7">Welcome</span>
-                <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
+                <span class="fw-bold"><?php echo e(user_account_information()['first_name']); ?></span>
               </li>
             </ul>
           </div>
@@ -259,7 +258,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
         <div class="page-inner">
           <div class="d-flex prealt_btn pt-2 pb-4">
             <div class="prealt_btn search-form-area">
-              <h1 style="color:#000000cf" class="fw-bold mb-3">Hi <?php echo user_account_information()['first_name'] . " " .  user_account_information()['last_name']; ?>!</h1>
+              <h1 style="color:#000000cf" class="fw-bold mb-3">Hi <?php echo e(user_account_information()['first_name']) . " " .  e(user_account_information()['last_name']); ?>!</h1>
               <!--
 				 <div class="search-form"> 
 					  <form action="index.php" class="input-group">

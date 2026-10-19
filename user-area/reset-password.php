@@ -1,8 +1,9 @@
 <?php
 // initialize session
-session_start();
 include '../config.php'; // database connection
+require_once __DIR__ . '/../function.php';
 if (isset($_REQUEST['email'])) {
+    require_csrf();
 
     $email = trim(strtolower(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['email']))));
     // checking email exists or not in database

@@ -1,5 +1,4 @@
 <?php
-    session_start();
     include '../config.php';
     include '../function.php';
     include '../user-area/authorized-user.php';
@@ -75,6 +74,7 @@
 
   // Handle user updates (charge amount, status, invoice) — allow only for owner
   if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_package'])) {
+    require_csrf();
     // Ensure package belongs to current user
     if ($package['user_id'] != $user_id) {
       echo "<div class='alert alert-danger'>Access denied.</div>";
@@ -407,7 +407,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
+                      <span class="fw-bold"><?php echo e(user_account_information()['first_name']); ?></span>
                 </li>
               </ul>
             </div>
@@ -440,6 +440,7 @@
       </div>
       <!-- Update form: charge amount, status, invoice upload (ADMIN_ONLY) -->
       <!-- <form method="POST" enctype="multipart/form-data" class="mt-3">
+        <?php echo csrf_field(); ?>
         <div class="mb-2">
           <label class="form-label">Charge Amount (USD)</label>
           <input type="text" name="courier_charge" class="form-control" value="<?php echo isset($package['invoice_total']) ? htmlspecialchars(number_format($package['invoice_total'], 2)) : ''; ?>" placeholder="Enter charge amount or leave blank to use calculated value">

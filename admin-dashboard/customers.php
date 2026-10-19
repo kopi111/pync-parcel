@@ -1,6 +1,5 @@
 <?php 
     // initialize session
-    session_start();  
 	include('../config.php'); // database connection
    	include('../function.php'); // function comes from user dashboard
    	include('function.php'); // function comes from admin dashboard
@@ -294,7 +293,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
+                      <span class="fw-bold"><?php echo e(user_account_information()['first_name']) ; ?></span>
                 </li>
               </ul>
             </div>
@@ -343,17 +342,17 @@
                         <tbody>
                               <?php foreach ($customers as $rows) { ?>
                             <tr>
-                                <td><?php echo $rows['account_number'] ?></td>
-                                <td><?php echo $rows['first_name'] ?></td>
-                                <td><?php echo $rows['email_address'] ?></td>
+                                <td><?php echo e($rows['account_number']) ?></td>
+                                <td><?php echo e($rows['first_name']) ?></td>
+                                <td><?php echo e($rows['email_address']) ?></td>
                                 <td><span class="badge bg-danger">unverified</span></td>
-                                <td><?php echo $rows['phone_number'] ?> </td>
+                                <td><?php echo e($rows['phone_number']) ?> </td>
                                 <td> <?php echo timeAgo($rows['created_at']); ?> </td>
                                 <td>
                                     <ul class="mb-0 action-list list-unstyled">
                                         <li>
 										  <a
-										   href="customer-view.php?user_id=<?php echo $rows['id'] ?>&user_name=<?php echo $rows['first_name'] ?>&account_number=<?php echo $rows['account_number'] ?>"
+										   href="customer-view.php?user_id=<?php echo $rows['id'] ?>&user_name=<?php echo e(urlencode($rows['first_name'])) ?>&account_number=<?php echo e(urlencode($rows['account_number'])) ?>"
 										   class="btn btn-sm btn-outline-secondary"
 										   title="View Customer"
 										   >

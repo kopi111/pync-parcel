@@ -1,6 +1,6 @@
 <?php
-session_start();
 include 'config.php';
+require_once __DIR__ . '/function.php';
 $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name
 
 ?>
@@ -79,22 +79,23 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
       </div>
       <div class="p-4 border-0">
         <form id="myForm" class="row" action="user-area/process-signup.php" method='POST'>
+          <?php echo csrf_field(); ?>
           <!-- Email address input-->
           <div class="mb-3 col-md-6">
             <label for="firstName">First name<small class="star">*</small></label>
-            <input autocomplete value="<?php echo isset($_REQUEST['first_name']) ? $_REQUEST['first_name'] : '';  ?>" name="first_name" class="form-control" id="firstName" type="text" placeholder="First name" />
+            <input autocomplete value="<?php echo isset($_REQUEST['first_name']) ? e($_REQUEST['first_name']) : '';  ?>" name="first_name" class="form-control" id="firstName" type="text" placeholder="First name" />
           </div>
           <div class="mb-3 col-md-6">
             <label for="last_name">Last name <small class="star">*</small></label>
-            <input value="<?php echo isset($_REQUEST['last_name']) ? $_REQUEST['last_name'] : '';  ?>" autocomplete name="last_name" class="form-control" id="last_name" type="text" placeholder="Last name" />
+            <input value="<?php echo isset($_REQUEST['last_name']) ? e($_REQUEST['last_name']) : '';  ?>" autocomplete name="last_name" class="form-control" id="last_name" type="text" placeholder="Last name" />
           </div>
           <div class="mb-3 col-md-6">
             <label id="phone" for="txtPhoneNo">Phone number <small class="star">*</small></label>
-            <input value="<?php echo isset($_REQUEST['Number']) ? $_REQUEST['Number'] : '';  ?>" id="txtPhoneNo" name="phone" class="form-control" maxlength="12" type="tel" placeholder="xxx-xxx-xxxx" />
+            <input value="<?php echo isset($_REQUEST['Number']) ? e($_REQUEST['Number']) : '';  ?>" id="txtPhoneNo" name="phone" class="form-control" maxlength="12" type="tel" placeholder="xxx-xxx-xxxx" />
           </div>
           <div class="mb-3 col-md-6">
             <label for="email">Email address<small class="star">*</small></label>
-            <input value="<?php echo isset($_REQUEST['Emailaddress']) ? $_REQUEST['Emailaddress'] : '';  ?>" autocomplete name="emailaddress" class="form-control" id="email" type="email" placeholder="Email address" />
+            <input value="<?php echo isset($_REQUEST['Emailaddress']) ? e($_REQUEST['Emailaddress']) : '';  ?>" autocomplete name="emailaddress" class="form-control" id="email" type="email" placeholder="Email address" />
           </div>
           <div class="mb-3 col-md-6">
             <label for="pass">Password<small class="star">*</small></label>

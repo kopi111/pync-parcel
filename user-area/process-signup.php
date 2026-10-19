@@ -1,7 +1,8 @@
 <?php
 // initialize session
-session_start();
 include '../config.php'; // database connection
+require_once __DIR__ . '/../function.php';
+require_csrf();
 // initialize user variables from user sign up form
 $pwd          = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_POST['pwd'])));
 $VerifyPwd    = ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_POST['verifypwd'])));
@@ -43,9 +44,9 @@ if (! isset($_POST['signup'])) {
   $_SESSION['message'] = 'Please Enter Number';
   header("location: ../sign-up.php?first_name=$first_name&last_name=$last_name&Number=$Number&Emailaddress=$Emailaddress");
   die();
-} else if (strlen($Number) < 11) {
+} else if (strlen(preg_replace('/\D/', '', $Number)) < 10) {
 
-  //If The Number not more than 11, Redirect to signup page
+  //If the phone has fewer than 10 digits (ignoring dashes/spaces), it is invalid
   $_SESSION['message'] = 'The Number must be valid';
   header("location: ../sign-up.php?first_name=$first_name&last_name=$last_name&Number=$Number&Emailaddress=$Emailaddress");
   die();
@@ -120,7 +121,7 @@ $hash_password  = password_hash($pwd, PASSWORD_DEFAULT);
 $Account_Number = 'Pync-' . rand(1, 100000); // generating account number
 $created_at     = date("Y-m-d H:i:s");       //date("m-d-Y H:i:s");
 $sql            = "INSERT INTO users (first_name, last_name, phone_number, email_address, password_hash, account_number, created_at)
-    VALUES ('$first_name', '$last_name', ' $Number', '$Emailaddress', '$hash_password', '$Account_Number', '$created_at')";
+    VALUES ('$first_name', '$last_name', '$Number', '$Emailaddress', '$hash_password', '$Account_Number', '$created_at')";
 
 if (mysqli_query($conn, $sql)) {
 
